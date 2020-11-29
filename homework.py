@@ -40,12 +40,15 @@ def get_homework_statuses(current_timestamp):
         headers=headers,
         params=params,
     )
-    try:
-        homework_statuses = requests.get(URL, headers=headers, params=params)
-        return homework_statuses.json()
-    except Exception as ex:
-        return logging.error("Error at %s", "request on server praktikum",
-                             exc_info=ex)
+    while True:
+        try:
+            homework_statuses = requests.get(URL, headers=headers,
+                                             params=params)
+            return homework_statuses.json()
+        except Exception as ex:
+            time.sleep(600)
+            return logging.error("Error at %s", "request on server praktikum",
+                                 exc_info=ex)
 
 
 def send_message(message, bot_client):
