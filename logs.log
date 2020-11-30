@@ -1,0 +1,17 @@
+ERROR:root:Error at Expecting value: line 1 column 1 (char 0), request on server praktikum
+ERROR:root:Бот столкнулся с ошибкой: 'NoneType' object has no attribute 'get'
+ERROR:root:Error at testing, request on server praktikum
+ERROR:root:Бот столкнулся с ошибкой: 'NoneType' object has no attribute 'get'
+ERROR:root:Error at Expecting value: line 1 column 1 (char 0), request on server praktikum
+ERROR:root:Error at Expecting value: line 1 column 1 (char 0), request on server praktikum
+ERROR:root:Бот столкнулся с ошибкой: 'NoneType' object has no attribute 'get'
+ERROR:root:Error at Expecting value: line 1 column 1 (char 0), request on server praktikum
+ERROR:root:Бот столкнулся с ошибкой: 'NoneType' object has no attribute 'get'
+2020-11-30 22:34:17,377
+2020-11-30 22:34:22,378
+2020-11-30 22:34:56,438 get_homework_statuses
+2020-11-30 22:35:01,443 main
+2020-11-30 22:35:53,451 get_homework_statuses MainProcess
+2020-11-30 22:35:58,452 main MainProcess
+2020-11-30 22:37:17,889 get_homework_statuses Error at Expecting value: line 1 column 1 (char 0), request on server praktikum
+2020-11-30 22:37:22,890 main Бот столкнулся с ошибкой: 'NoneType' object has no attribute 'get'

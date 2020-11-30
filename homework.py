@@ -9,25 +9,37 @@ import logging
 
 load_dotenv()
 
-
+logging.basicConfig(
+    filename='logs.log',
+    format='%(asctime)s %(funcName)s %(message)s'
+)
 PRAKTIKUM_TOKEN = os.getenv("PRAKTIKUM_TOKEN")
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 URL = "https://praktikum.yandex.ru/api/user_api/homework_statuses/"
-headers = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
+HEADERS = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
+BOT_CLIENT = telegram.Bot(token=TELEGRAM_TOKEN)
 
 
 def parse_homework_status(homework):
-    params = {
-        'from_date': 0,
-    }
+    status = homework['status']
     homework_name = homework['homework_name']
-    if homework['status'] == 'rejected':
-        verdict = \
+    if status == 'rejected':
+        verdict = (
             'К сожалению в работе нашлись ошибки.'
+        )
+    elif status == 'approved':
+        verdict = (
+            'Ревьюеру всё понравилось, можно приступать к следующему '
+            'уроку.'
+        )
     else:
-        verdict = \
-            'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
+        verdict = (
+            f'Получен статус: {status}. Ошибка'
+        )
+        return logging.warning(
+            f'Получен не ожидаемый статус работы: {status}'
+        )
     return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
@@ -35,29 +47,23 @@ def get_homework_statuses(current_timestamp):
     params = {
         'from_date': current_timestamp,
     }
-    homework_statuses = requests.get(
-        url=URL,
-        headers=headers,
-        params=params,
-    )
-    while True:
-        try:
-            homework_statuses = requests.get(URL, headers=headers,
-                                             params=params)
-            return homework_statuses.json()
-        except Exception as ex:
-            time.sleep(600)
-            return logging.error("Error at %s", "request on server praktikum",
-                                 exc_info=ex)
+    try:
+        response = requests.get(URL,
+                                headers=HEADERS,
+                                params=params)
+        return response.json()
+    except (ConnectionError, TimeoutError, ValueError) as ex:
+        return logging.error(
+                f'Error at {ex}, request on server praktikum'
+        )
 
 
 def send_message(message, bot_client):
-    return bot_client.send_message(chat_id=CHAT_ID,
+    return BOT_CLIENT.send_message(chat_id=CHAT_ID,
                                    text=message)
 
 
 def main():
-    bot_client = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())  # начальное значение timestamp
     while True:
         try:
@@ -70,8 +76,8 @@ def main():
             time.sleep(600)  # опрашивать раз в 10 минут
 
         except Exception as e:
-            print(f'Бот столкнулся с ошибкой: {e}')
             time.sleep(5)
+            return logging.error(f'Бот столкнулся с ошибкой: {e}')
 
 
 if __name__ == '__main__':
