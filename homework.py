@@ -16,21 +16,25 @@ URL = "https://praktikum.yandex.ru/api/user_api/homework_statuses/"
 HEADERS = {'Authorization': f'OAuth {PRAKTIKUM_TOKEN}'}
 bot_client = telegram.Bot(token=TELEGRAM_TOKEN)
 
-UNKNOWN_STATUS = 'Получен не ожидаемый статус работы: {status}'
-ST = {
+STATUS_ERROR = 'Получен не ожидаемый статус работы: {status}'
+STATUSES = {
     'approved': 'Ревьюеру всё понравилось, можно приступать к следующему '
                 'уроку.',
     'rejected': 'К сожалению в работе нашлись ошибки.',
     'else': 'Получен статус: {status}. Ошибка'
 }
-FINALLY = 'У вас проверили работу "{homework_name}"!\n\n{verdict}'
+ANSWER = 'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
 def parse_homework_status(homework):
     status = homework['status']
     homework_name = homework['homework_name']
-    raise NameError(UNKNOWN_STATUS.format(status=status))
-    #return FINALLY.format(homework_name=homework_name, verdict=ST[status])
+    verdikt = ANSWER.format(homework_name=homework_name, verdict=STATUSES[
+        status])
+    correct = STATUSES.get(status)
+    if not correct:
+        raise Exception(STATUS_ERROR.format(status=status))
+    return verdikt
 
 
 def get_homework_statuses(current_timestamp):
@@ -60,7 +64,17 @@ def main():
             new_homework = get_homework_statuses(current_timestamp)
             if new_homework.get('homeworks'):
                 send_message(parse_homework_status(
-                    new_homework.get('homeworks')[0]))
+                    new_homework.get('homeworks')[0]), bot_client)
+            elif new_homework.get('error'):
+                code = new_homework.get('code', 'Unknown code')
+                error = new_homework['error']['error']
+                logging.exception(f'Попытка обращения к серверу имеет ошибку'
+                                  f'{code}. {error}.')
+            elif new_homework.get('message'):
+                code = new_homework.get('code', 'Unknown code')
+                message = new_homework['message']
+                logging.exception(f'Попытка обращения к серверу имеет ошибку'
+                                  f'{code}. {message}.')
             current_timestamp = new_homework.get('current_date',
                                                  current_timestamp)
             time.sleep(600)  # опрашивать раз в 10 минут
