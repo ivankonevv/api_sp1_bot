@@ -30,16 +30,18 @@ STATUSES = {
                 'уроку.',
     'rejected': 'К сожалению в работе нашлись ошибки.',
 }
-ANSWER = 'У вас проверили работу "{homework_name}"!\n\n{verdict}'
+ANSWER = 'У вас проверили работу "{homework_name}" от {date}!\n\n{verdict}'
 
 
 def parse_homework_status(homework):
     status = homework['status']
     result = STATUSES.get(status)
+    date = homework['date_updated']
     if not result:
         raise ValueError(STATUS_ERROR.format(status=status))
     homework_name = homework['homework_name']
-    return ANSWER.format(homework_name=homework_name, verdict=result)
+    return ANSWER.format(homework_name=homework_name, verdict=result,
+                         date=date)
 
 
 def get_homework_statuses(current_timestamp):
@@ -65,7 +67,7 @@ def get_homework_statuses(current_timestamp):
             url=URL,
             params=params
         ))
-    elif 'code' in resp:
+    if 'code' in resp:
         code = resp.get('code', 'Unknown code')
         error = resp['message']
         raise ValueError(CODE_ERROR.format(
